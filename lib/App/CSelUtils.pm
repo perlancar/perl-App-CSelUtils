@@ -22,9 +22,9 @@ $SPEC{parse_csel_expr} = {
     'cmdline.default_format' => 'json-pretty',
 };
 sub parse_csel_expr {
-    require Data::CSel::Parser;
+    require Data::CSel;
     my %args = @_;
-    [200, "OK", Data::CSel::Parser::parse_csel_expr($args{expr})];
+    [200, "OK", Data::CSel::parse_csel($args{expr})];
 }
 
 1;
