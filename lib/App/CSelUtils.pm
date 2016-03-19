@@ -9,7 +9,7 @@ use warnings;
 
 our %SPEC;
 
-$SPEC{parse_csel_expr} = {
+$SPEC{parse_csel} = {
     v => 1.1,
     summary => 'Parse CSel expression',
     args => {
