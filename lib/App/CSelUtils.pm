@@ -21,7 +21,7 @@ $SPEC{parse_csel} = {
     },
     'cmdline.default_format' => 'json-pretty',
 };
-sub parse_csel_expr {
+sub parse_csel {
     require Data::CSel;
     my %args = @_;
     [200, "OK", Data::CSel::parse_csel($args{expr})];
