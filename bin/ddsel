@@ -1,0 +1,35 @@
+#!perl
+
+# DATE
+# VERSION
+
+use 5.010001;
+use strict;
+use warnings;
+
+use Perinci::CmdLine::Any;
+
+Perinci::CmdLine::Any->new(
+    url => '/App/CSelUtils/ddsel',
+)->run;
+
+# ABSTRACT:
+# PODNAME:
+
+=head1 SYNOPSIS
+
+ % ddsel "Scalar[value > 3]" file.pl
+
+
+=head1 SEE ALSO
+
+L<Data::CSel>, L<Data::CSel::WrapStruct>
+
+L<jsonsel>, a similar application but for selecting JSON elements.
+
+L<yamlsel>, a similar application but for selecting YAML elements.
+
+L<orgsel>, a similar application but for selecting Org elements.
+
+L<htmlsel>, a similar application but for selecting HTML elements using CSS
+selector syntax.

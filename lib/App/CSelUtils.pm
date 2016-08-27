@@ -193,7 +193,7 @@ sub do_actions_on_nodes {
                         }
                     };
                     if ($@) {
-                        warn $@;
+                        #warn $@;
                         $node_res = undef;
                         last;
                     }
@@ -205,6 +205,60 @@ sub do_actions_on_nodes {
         }
     }
     $res;
+}
+
+$SPEC{ddsel} = {
+    v => 1.1,
+    summary => 'Select Perl data structure elements using CSel (CSS-selector-like) syntax',
+    args => {
+        %foosel_common_args,
+        %foosel_struct_action_args,
+    },
+};
+sub ddsel {
+    my %args = @_;
+
+    my $expr = $args{expr};
+    my $actions = $args{actions};
+
+    # parse first so we can bail early on error without having to read the input
+    require Data::CSel;
+    Data::CSel::parse_csel($expr)
+          or return [400, "Invalid CSel expression '$expr'"];
+
+    my $data;
+    if ($args{file} eq '-') {
+        binmode STDIN, ":utf8";
+        $data = eval join("", <>);
+        die if $@;
+    } else {
+        require File::Slurper;
+        $data = eval File::Slurper::read_text($args{file});
+        die if $@;
+    }
+
+    require Data::CSel::WrapStruct;
+    my $tree = Data::CSel::WrapStruct::wrap_struct($data);
+
+    my @matches = Data::CSel::csel(
+        {class_prefixes=>['Data::CSel::WrapStruct']}, $expr, $tree);
+
+    # skip root node itself
+    require Scalar::Util;
+    @matches = grep {
+        Scalar::Util::refaddr($_) ne Scalar::Util::refaddr($tree) } @matches;
+
+    for my $action (@$actions) {
+        if ($action eq 'print') {
+            $action = 'print_func_or_meth:meth:value.func:Data::Dmp::dmp',
+        }
+    }
+
+    require Data::Dmp;
+    App::CSelUtils::do_actions_on_nodes(
+        nodes   => \@matches,
+        actions => $args{actions},
+    );
 }
 
 1;
