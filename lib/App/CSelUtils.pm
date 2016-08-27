@@ -142,4 +142,9 @@ This distribution contains the following utilities:
 
 # INSERT_EXECS_LIST
 
+
+=head1 SEE ALSO
+
+L<htmlsel>, L<orgsel>, L<jsonsel>, L<yamlsel>
+
 =cut
