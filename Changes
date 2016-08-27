@@ -1,5 +1,14 @@
 Revision history for App-CSelUtils
 
+0.04    2016-08-27 (PERLANCAR)
+
+        - Provide common options and actions to accommodate jsonsel & yamlsel.
+
+        - [doc][Bugfix] Fix Typo which caused list of utilities not generated.
+
+        - [doc] Mention htmlsel, orgsel, jsonsel, yamlsel.
+
+
 0.03    2016-05-28 (PERLANCAR)
 
 	- Add stuffs for orgsel & htmlsel.

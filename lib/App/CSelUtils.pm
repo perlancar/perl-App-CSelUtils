@@ -25,7 +25,46 @@ our %foosel_common_args = (
     },
 );
 
-our %foosel_action_args = (
+our %foosel_struct_action_args = (
+    actions => {
+        summary => 'Specify action(s) to perform on matching nodes',
+        'x.name.is_plural' => 1,
+        schema => ['array*', {
+            of => ['str*', {
+                in => ['print', 'count'],
+            }],
+        }],
+        default => ['print'],
+        cmdline_aliases => {
+            print => {
+                summary => 'Shortcut for --action print',
+                is_flag => 1,
+                code => sub {
+                    my $args = shift;
+                    $args->{actions} //= [];
+                    my $actions = $args->{actions};
+                    unless (grep {$_ eq 'print'} @$actions) {
+                        push @$actions, 'print';
+                    }
+                },
+            },
+            count => {
+                summary => 'Shortcut for --action count',
+                is_flag => 1,
+                code => sub {
+                    my $args = shift;
+                    $args->{actions} //= [];
+                    my $actions = $args->{actions};
+                    unless (grep {$_ eq 'count'} @$actions) {
+                        push @$actions, 'count';
+                    }
+                },
+            },
+        },
+    },
+);
+
+our %foosel_tree_action_args = (
     actions => {
         summary => 'Specify action(s) to perform on matching nodes',
         'x.name.is_plural' => 1,
@@ -34,9 +73,7 @@ our %foosel_action_args = (
                 match => qr/\A(print_as_string|print_method:\w+(\.\w+)*|count)\z/,
             }],
         }],
-
         default => ['print_as_string'],
-
         cmdline_aliases => {
             print => {
                 summary => 'Shortcut for --action print_as_string',
@@ -117,6 +154,46 @@ sub do_actions_on_nodes {
                 for my $meth (@meths) {
                     eval { $node_res = $node_res->$meth };
                     if ($@) {
+                        $node_res = undef;
+                        last;
+                    }
+                }
+                push @{ $res->[2] }, $node_res;
+            }
+        } elsif ($action =~ /\Aprint_func:(.+)\z/) {
+            no strict 'refs';
+            my @funcs = split /\./, $1;
+            for my $node (@$nodes) {
+                my $node_res = $node;
+                for my $func (@funcs) {
+                    eval { $node_res = &{$func}($node_res) };
+                    if ($@) {
+                        $node_res = undef;
+                        last;
+                    }
+                }
+                push @{ $res->[2] }, $node_res;
+            }
+        } elsif ($action =~ /\Aprint_func_or_meth:(.+)\z/) {
+            no strict 'refs';
+            my @entries = split /\./, $1;
+            for my $node (@$nodes) {
+                my $node_res = $node;
+                for my $entry (@entries) {
+                    my ($type, $name) = $entry =~ /\A(func|meth)::?(.+)\z/ or
+                        return [400, "For action print_func_or_meth, ".
+                                    "specify func:FUNCNAME or meth:METHNAME"];
+                    eval {
+                        if ($type eq 'func') {
+                            #use DD; say "func: $name(", DD::dump($node_res), ")";
+                            $node_res = &{$name}($node_res);
+                        } else {
+                            #use DD; say "meth: $name on ", DD::dump($node_res);
+                            $node_res = $node_res->$name;
+                        }
+                    };
+                    if ($@) {
+                        warn $@;
                         $node_res = undef;
                         last;
                     }
