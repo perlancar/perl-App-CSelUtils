@@ -140,6 +140,6 @@ sub do_actions_on_nodes {
 
 This distribution contains the following utilities:
 
-# INSERT_EXECS_LISTS
+# INSERT_EXECS_LIST
 
 =cut
