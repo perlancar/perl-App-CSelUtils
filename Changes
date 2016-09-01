@@ -1,5 +1,10 @@
 Revision history for App-CSelUtils
 
+0.06    2016-09-01 (PERLANCAR)
+
+	- [Bugfix] ddsel: Don't skip root node if it's the only result.
+
+
 0.05    2016-08-27 (PERLANCAR)
 
 	- Add utility: ddsel.
