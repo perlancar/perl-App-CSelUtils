@@ -1,5 +1,12 @@
 Revision history for App-CSelUtils
 
+0.07    2016-09-01 (PERLANCAR)
+
+	- No functional changes.
+
+	- [doc] Mention CSel::Examples.
+
+
 0.06    2016-09-01 (PERLANCAR)
 
 	- [Bugfix] ddsel: Don't skip root node if it's the only result.
