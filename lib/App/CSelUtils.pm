@@ -246,7 +246,8 @@ sub ddsel {
     # skip root node itself
     require Scalar::Util;
     @matches = grep {
-        Scalar::Util::refaddr($_) ne Scalar::Util::refaddr($tree) } @matches;
+        Scalar::Util::refaddr($_) ne Scalar::Util::refaddr($tree) } @matches
+              unless @matches <= 1;
 
     for my $action (@$actions) {
         if ($action eq 'print') {
