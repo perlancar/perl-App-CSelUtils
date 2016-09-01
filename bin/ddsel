@@ -23,7 +23,7 @@ Perinci::CmdLine::Any->new(
 
 =head1 SEE ALSO
 
-L<Data::CSel>, L<Data::CSel::WrapStruct>
+L<Data::CSel>, L<Data::CSel::WrapStruct>, L<CSel::Examples>
 
 L<jsonsel>, a similar application but for selecting JSON elements.
 
