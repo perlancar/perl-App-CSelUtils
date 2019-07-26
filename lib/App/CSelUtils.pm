@@ -243,7 +243,7 @@ sub ddsel {
 
     my $data;
     if ($args{file} eq '-') {
-        binmode STDIN, ":utf8";
+        binmode STDIN, ":encoding(utf8)";
         $data = eval join("", <>);
         die if $@;
     } else {
@@ -266,7 +266,7 @@ sub ddsel {
 
     for my $action (@$actions) {
         if ($action eq 'print') {
-            $action = 'print_func_or_meth:meth:value.func:Data::Dmp::dmp',
+            $action = 'print_func_or_meth:meth:value.func:Data::Dmp::dmp';
         }
     }
 
