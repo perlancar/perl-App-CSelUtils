@@ -70,7 +70,7 @@ our %foosel_tree_action_args = (
         'x.name.is_plural' => 1,
         schema => ['array*', {
             of => ['str*', {
-                match => qr/\A(dump|print_as_string|print_method:\w+(\.\w+)*|count)\z/,
+                match => qr/\A(dump(:\w+(\.\w+)*)?|print_as_string|print_method:\w+(\.\w+)*|count)\z/,
             }],
         }],
         default => ['print_as_string'],
@@ -151,13 +151,16 @@ sub do_actions_on_nodes {
 
     my $res = [200, "OK"];
     for my $action (@$actions) {
-        if ($action eq 'dump') {
+        if ($action =~ /\Adump:(.+)/) {
             require Tree::ToTextLines;
+            my @attrs = split /\./, $1;
             push @{ $res->[2] }, map {
                 Tree::ToTextLines::render_tree_as_text({
                     show_guideline  => 1,
-                    show_class_name => 1,
-                    id_attribute    => "id",
+                    on_show_node    => sub {
+                        my ($node, $level, $seniority, $is_last_child, $opts) = @_;
+                        "(".ref($node).") ".join(", ", map {"$_=" . ($node->$_ // 'undef')} @attrs);
+                    },
                 }, $_)
               } @$nodes;
         } elsif ($action eq 'count') {
