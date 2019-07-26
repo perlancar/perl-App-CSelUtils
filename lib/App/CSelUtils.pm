@@ -70,7 +70,7 @@ our %foosel_tree_action_args = (
         'x.name.is_plural' => 1,
         schema => ['array*', {
             of => ['str*', {
-                match => qr/\A(print_as_string|print_method:\w+(\.\w+)*|count)\z/,
+                match => qr/\A(dump|print_as_string|print_method:\w+(\.\w+)*|count)\z/,
             }],
         }],
         default => ['print_as_string'],
@@ -96,6 +96,18 @@ our %foosel_tree_action_args = (
                     my $actions = $args->{actions};
                     unless (grep {$_ eq 'count'} @$actions) {
                         push @$actions, 'count';
+                    }
+                },
+            },
+            dump => {
+                summary => 'Shortcut for --action dump',
+                is_flag => 1,
+                code => sub {
+                    my $args = shift;
+                    $args->{actions} //= [];
+                    my $actions = $args->{actions};
+                    unless (grep {$_ eq 'dump'} @$actions) {
+                        push @$actions, 'dump';
                     }
                 },
             },
@@ -139,7 +151,16 @@ sub do_actions_on_nodes {
 
     my $res = [200, "OK"];
     for my $action (@$actions) {
-        if ($action eq 'count') {
+        if ($action eq 'dump') {
+            require Tree::ToTextLines;
+            push @{ $res->[2] }, map {
+                Tree::ToTextLines::render_tree_as_text({
+                    show_guideline  => 1,
+                    show_class_name => 1,
+                    id_attribute    => "id",
+                }, $_)
+              } @$nodes;
+        } elsif ($action eq 'count') {
             if (@$actions == 1) {
                 $res->[2] = ~~@$nodes;
             } else {
