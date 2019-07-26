@@ -210,6 +210,21 @@ sub do_actions_on_nodes {
 $SPEC{ddsel} = {
     v => 1.1,
     summary => 'Select Perl data structure elements using CSel (CSS-selector-like) syntax',
+    description => <<'_',
+
+Note that this operates against Perl data structure, not Perl source code
+elements (see <prog:ppisel> for that). File is Perl source code that defines
+data structure, e.g.:
+
+    {
+        summary => 'This is a hash',
+        # this is an array inside a hash
+        array => [
+            1, 2, 3,
+        ],
+    };
+
+_
     args => {
         %foosel_common_args,
         %foosel_struct_action_args,
@@ -277,6 +292,6 @@ This distribution contains the following utilities:
 
 =head1 SEE ALSO
 
-L<htmlsel>, L<orgsel>, L<jsonsel>, L<yamlsel>
+L<htmlsel>, L<orgsel>, L<jsonsel>, L<yamlsel>, L<podsel>, L<ppisel>
 
 =cut
