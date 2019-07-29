@@ -361,7 +361,7 @@ sub ddsel {
 
 # ABSTRACT: Utilities related to Data::CSel
 
-=for Pod::Coverage ^()$
+=for Pod::Coverage ^(foosel)$
 
 =head1 DESCRIPTION
 
