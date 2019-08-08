@@ -112,24 +112,32 @@ Each action can be one of the following:
 * `count` will print the number of matching nodes.
 
 * `print_method` will call on or more of the node object's methods and print the
-result. Example:
+  result. Example:
 
     print_method:as_string
 
 * `dump` will show a indented text representation of the node and its
-descendants. Each line will print information about a single node: its class,
-followed by the value of one or more attributes. You can specify which
-attributes to use in a dot-separated syntax, e.g.:
+  descendants. Each line will print information about a single node: its class,
+  followed by the value of one or more attributes. You can specify which
+  attributes to use in a dot-separated syntax, e.g.:
 
     dump:tag.id.class
 
-which will result in a node printed like this:
+  which will result in a node printed like this:
 
     HTML::Element tag=p id=undef class=undef
 
 By default, if no attributes are specified, `id` is used. If the node class does
 not support the attribute, or if the value of the attribute is undef, then
 `undef` is shown.
+
+* `eval` will execute Perl code for each matching node. The Perl code will be
+  called with arguments: `($node)`. For convenience, `$_` is also locally set to
+  the matching node. Example in <prog:htmlsel> you can add this action:
+
+    eval:'print $_->tag'
+
+  which will print the tag name for each matching <pm:HTML::Element> node.
 
 _
     },
@@ -238,7 +246,7 @@ sub foosel {
             } elsif ($action =~ /\Aeval:(.+)/) {
                 my $string_code = $1;
                 my $compiled_code =
-                    eval "package main; no strict; no warnings; $string_code";
+                    eval "package main; no strict; no warnings; sub { $string_code }";
                 if ($@) {
                     die "Can't compile code in eval: $@\n";
                 }
