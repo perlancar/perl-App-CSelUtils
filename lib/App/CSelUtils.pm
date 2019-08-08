@@ -70,7 +70,7 @@ our %foosel_tree_action_args = (
         'x.name.is_plural' => 1,
         schema => ['array*', {
             of => ['str*', {
-                match => qr/\A(dump|print_as_string|print_method:\w+(\.\w+)*|count)\z/,
+                match => qr/\A(eval:.+|dump|print_as_string|print_method:\w+(\.\w+)*|count)\z/,
             }],
         }],
         default => ['print_as_string'],
@@ -111,13 +111,20 @@ our %foosel_tree_action_args = (
                     }
                 },
             },
+            eval => {
+                summary => '--eval E is shortcut for --action eval:E',
+                code => sub {
+                    my ($args, $val) = @_;
+                    $args->{actions} //= [];
+                    push @{ $args->{actions} }, "eval:$val";
+                },
+            },
             print_method => {
                 summary => '--print-method M is shortcut for --action print_method:M',
                 code => sub {
                     my ($args, $val) = @_;
                     $args->{actions} //= [];
-                    my $actions = $args->{actions};
-                    push @$actions, "print_method:$val";
+                    push @{ $args->{actions} }, "print_method:$val";
                 },
             },
         },
@@ -148,9 +155,11 @@ sub do_actions_on_nodes {
 
     my $nodes = $args{nodes};
     my $actions = $args{actions};
+    my $actions_data = [];
 
     my $res = [200, "OK"];
-    for my $action (@$actions) {
+    for my $i (0..$#{$actions}) {
+        my $action = $actions->[$i];
         if ($action eq 'dump') {
             require Tree::ToTextLines;
             push @{ $res->[2] }, map {
@@ -160,6 +169,21 @@ sub do_actions_on_nodes {
                     id_attribute    => "id",
                 }, $_)
               } @$nodes;
+        } elsif ($action =~ /\Aeval:(.+)/) {
+            my $string_code = $1;
+            my $compiled_code = $actions_data->[$i] // do {
+                my $compiled_code =
+                    eval "package main; no strict; no warnings; $string_code";
+                if ($@) {
+                    die "Can't compile code in eval: $@\n";
+                }
+                $actions_data->[$i] = $compiled_code;
+                $compiled_code;
+            };
+            for my $node (@$nodes) {
+                local $_ = $node;
+                $compiled_code->($node);
+            }
         } elsif ($action eq 'count') {
             if (@$actions == 1) {
                 $res->[2] = ~~@$nodes;
