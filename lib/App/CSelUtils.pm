@@ -141,6 +141,25 @@ not support the attribute, or if the value of the attribute is undef, then
 
 _
     },
+    node_actions_on_descendants => {
+        summary => 'Specify how descendants should be actioned upon',
+        schema => ['str*', in=>['', 'descendants_depth_first']],
+        default => '',
+        description => <<'_',
+
+This option sets how node action is performed (See `node_actions` option).
+
+When set to '' (the default), then only matching nodes are actioned upon.
+
+When set to 'descendants_depth_first', then after each matching node is actioned
+upon by an action, the descendants of the matching node are also actioned, in
+depth-first order. This option is sometimes necessary e.g. when your node's
+`as_string()` method shows a node's string representation that does not include
+its descendants.
+
+_
+        cmdline_aliases => {R=>{is_flag=>1, summary=>'Shortcut for --node-action-on-descendants=descendants_depth_first', code=>sub { $_[0]{node_actions_on_descendants} = 'descendants_depth_first'}}},
+    },
 );
 
 $SPEC{parse_csel} = {
@@ -175,6 +194,7 @@ sub foosel {
     my $select_action = $args{select_action} // 'csel';
     my $expr = $args{expr};
     my $node_actions = $args{node_actions};
+    my $node_actions_on_descendants = $args{node_actions_on_descendants} // '';
 
   PARSE_CSEL: {
         unless ($select_action eq 'root') {
@@ -215,6 +235,16 @@ sub foosel {
   PERFORM_NODE_ACTIONS: {
         my $actions = $args{node_actions};
 
+        my @action_targets;
+        if ($node_actions_on_descendants) {
+            require Code::Includable::Tree::NodeMethods;
+            @action_targets = map {
+                ($_, Code::Includable::Tree::NodeMethods::descendants_depth_first($_))
+            } @matches;
+        } else {
+            @action_targets = @matches;
+        }
+
         for my $action (@$actions) {
             if ($action =~ /\Adump(?::(.+))?/) {
                 my $cols = $ENV{COLUMNS} // do {
@@ -242,7 +272,7 @@ sub foosel {
                             _elide($str, $cols - $level*4);
                         },
                     }, $_)
-                  } @matches;
+                  } @action_targets;
             } elsif ($action =~ /\Aeval:(.+)/) {
                 my $string_code = $1;
                 my $compiled_code =
@@ -250,9 +280,9 @@ sub foosel {
                 if ($@) {
                     die "Can't compile code in eval: $@\n";
                 }
-                for my $match (@matches) {
-                    local $_ = $match;
-                    $compiled_code->($match);
+                for my $node (@action_targets) {
+                    local $_ = $node;
+                    $compiled_code->($node);
                 }
             } elsif ($action eq 'count') {
                 if (@$actions == 1) {
@@ -261,10 +291,10 @@ sub foosel {
                     push @{ $res->[2] }, ~~@matches;
                 }
             } elsif ($action eq 'print_as_string') {
-                push @{ $res->[2] }, map {$_->as_string} @matches;
+                push @{ $res->[2] }, map {$_->as_string} @action_targets;
             } elsif ($action =~ /\Aprint_method:(.+)\z/) {
                 my @meths = split /\./, $1;
-                for my $node (@matches) {
+                for my $node (@action_targets) {
                     my $node_res = $node;
                     for my $meth (@meths) {
                         eval { $node_res = $node_res->$meth };
@@ -278,7 +308,7 @@ sub foosel {
             } elsif ($action =~ /\Aprint_func:(.+)\z/) {
                 no strict 'refs';
                 my @funcs = split /\./, $1;
-                for my $node (@matches) {
+                for my $node (@action_targets) {
                     my $node_res = $node;
                     for my $func (@funcs) {
                         eval { $node_res = &{$func}($node_res) };
@@ -292,7 +322,7 @@ sub foosel {
             } elsif ($action =~ /\Aprint_func_or_meth:(.+)\z/) {
                 no strict 'refs';
                 my @entries = split /\./, $1;
-                for my $node (@matches) {
+                for my $node (@action_targets) {
                     my $node_res = $node;
                     for my $entry (@entries) {
                         my ($type, $name) = $entry =~ /\A(func|meth)::?(.+)\z/ or
