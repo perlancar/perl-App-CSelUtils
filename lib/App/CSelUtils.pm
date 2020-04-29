@@ -1,6 +1,8 @@
 package App::CSelUtils;
 
+# AUTHORITY
 # DATE
+# DIST
 # VERSION
 
 use 5.010001;
@@ -37,8 +39,7 @@ _
         pos => 1,
     },
     file => {
-        schema => 'str*',
-        'x.schema.entity' => 'filename',
+        schema => 'filename*',
         pos => 0,
         default => '-',
     },
