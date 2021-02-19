@@ -1,3 +1,11 @@
+0.087   2021-02-19  Released-By: PERLANCAR; Urgency: low
+
+	- No functional changes.
+
+	- [dist] Edit Changes: rename Backward-Compatible property in
+	  Release Note to Backward-Incompatible.
+
+
 0.086   2020-04-29  Released-By: PERLANCAR; Urgency: low
 
 	- Tweak Rinci metadata: replace deprecated
