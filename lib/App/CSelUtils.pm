@@ -257,11 +257,11 @@ sub foosel {
                     $cols;
                 } // 80;
 
-                require Tree::ToTextLines;
+                require Tree::To::TextLines;
                 my @attrs = split /\./, $1;
                 @attrs = ('id') unless @attrs;
                 push @{ $res->[2] }, map {
-                    Tree::ToTextLines::render_tree_as_text({
+                    Tree::To::TextLines::render_tree_as_text({
                         show_guideline  => 1,
                         on_show_node    => sub {
                             my ($node, $level, $seniority, $is_last_child, $opts) = @_;
